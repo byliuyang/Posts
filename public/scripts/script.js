@@ -13,6 +13,10 @@ var header,
     postsEl,
     readmeBtn;
 
+// Force https
+if(window.location.href.indexOf('https://')==-1)
+    window.location.href = window.location.href.replace('http://', 'https://');
+
 window.onload = function () {
     initElements();
     initEventHandler();

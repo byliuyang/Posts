@@ -4,6 +4,7 @@ var http = require('http'),
     port = 8080,
     marked = require('marked'),
     router = require('./libs/router'),
+    config = require('./configs/config'),
     messsageSocket = require('./app/websockets/messageSocket');
 
 // Set syntax highlight for markdown code snippets
