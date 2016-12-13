@@ -58,7 +58,7 @@ function initEventHandler() {
 }
 
 function initStreaming() {
-    connection = new WebSocket('ws://localhost:8080');
+    connection = new WebSocket(window.location.href.replace(/(https?)/, 'wss'));
     connection.onopen = function () {
         connection.send('Ping');
     };
