@@ -5,21 +5,21 @@ Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-lic
 */
 
 .hljs {
-  display: block;
-  overflow-x: auto;
-  padding: 0.5em;
-  background: #23241f;
+	display    : block;
+	overflow-x : auto;
+	padding    : 0.5em;
+	background : #23241F;
 }
 
 .hljs,
 .hljs-tag,
 .hljs-subst {
-  color: #f8f8f2;
+	color : #F8F8F2;
 }
 
 .hljs-strong,
 .hljs-emphasis {
-  color: #a8a8a2;
+	color : #A8A8A2;
 }
 
 .hljs-bullet,
@@ -28,39 +28,39 @@ Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-lic
 .hljs-regexp,
 .hljs-literal,
 .hljs-link {
-  color: #ae81ff;
+	color : #AE81FF;
 }
 
 .hljs-code,
 .hljs-title,
 .hljs-section,
 .hljs-selector-class {
-  color: #a6e22e;
+	color : #A6E22E;
 }
 
 .hljs-strong {
-  font-weight: bold;
+	font-weight : bold;
 }
 
 .hljs-emphasis {
-  font-style: italic;
+	font-style : italic;
 }
 
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-name,
 .hljs-attr {
-  color: #f92672;
+	color : #F92672;
 }
 
 .hljs-symbol,
 .hljs-attribute {
-  color: #66d9ef;
+	color : #66D9EF;
 }
 
 .hljs-params,
 .hljs-class .hljs-title {
-  color: #f8f8f2;
+	color : #F8F8F2;
 }
 
 .hljs-string,
@@ -73,18 +73,18 @@ Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-lic
 .hljs-addition,
 .hljs-variable,
 .hljs-template-variable {
-  color: #e6db74;
+	color : #E6DB74;
 }
 
 .hljs-comment,
 .hljs-deletion {
-  color: #75715e;
+	color : #75715E;
 }
 
 .hljs-meta {
-  color: rgba(255, 255,255,0.8);
+	color : rgba(255, 255, 255, 0.8);
 }
 
 .hljs-meta-keyword {
-  color : #66D9EF;
+	color : #66D9EF;
 }

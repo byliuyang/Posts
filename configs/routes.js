@@ -11,14 +11,7 @@
  */
 
 module.exports = [
-    ['get', '', 'static#index'],
-    ['get', 'movies/new', 'movie#new'],
-    ['get', 'movies', 'movie#index'],
-    ['post', 'movies', 'movie#create'],
-    ['get', 'movies/:name', 'movie#show'],
-    ['patch', 'movies/:name', 'movie#update'],
-    ['get', 'movies/:name/edit', 'movie#edit'],
-    ['patch', 'movies/:name', 'movie#update'],
-    ['delete', 'movies/:name', 'movie#destroy'],
-    ['get', 'search', 'search#search']
+    ['get', '', 'post#index'],
+    ['post', 'post', 'post#create'],
+    ['post', 'session', 'session#create']
 ];

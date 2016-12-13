@@ -1,37 +1,47 @@
-var fileController = module.exports = Object.create(require('./ApplicationController.js'));
+var ApplicationController = require('./ApplicationController.js');
 
 var fs = require('fs')
     , url = require('url')
     , marked = require('marked');
 
-fileController.setPathname = function (pathname) {
-    this.pathname = pathname;
-};
+function FileController() {
+    ApplicationController.call(this);
 
-fileController.css = function () {
-    this.sendFile('public' + this.pathname, 'text/css');
-};
+    this.setPathname = function (pathname) {
+        this.pathname = pathname;
+    };
 
-fileController.js = function () {
-    this.sendFile('public' + this.pathname, 'application/javascript');
-};
+    this.css = function () {
+        this.sendFile('public' + this.pathname, 'text/css');
+    };
 
-fileController.png = function () {
-    this.sendFile('public' + this.pathname, 'image/png');
-};
+    this.js = function () {
+        this.sendFile('public' + this.pathname, 'application/javascript');
+    };
 
-fileController.jpg = function () {
-    this.sendFile('public' + this.pathname, 'image/jpeg');
-};
+    this.png = function () {
+        this.sendFile('public' + this.pathname, 'image/png');
+    };
 
-fileController.md = function () {
-    this.setView('md');
-    var self = this;
-    fs.readFile('.' + url.parse(this.req.url).pathname, function (error, content) {
-        if (error != null) fileController.respond(404, "page not found");
-        else {
-            self.variables['readme'] =  marked(content.toString());
-            self.respond(200);
-        }
-    });
-};
+    this.jpg = function () {
+        this.sendFile('public' + this.pathname, 'image/jpeg');
+    };
+
+    this.ico = function () {
+        this.sendFile('public' + this.pathname, 'image/x-icon');
+    };
+
+    this.md = function () {
+        this.setView('md');
+        var self = this;
+        fs.readFile('.' + url.parse(this.req.url).pathname, function (error, content) {
+            if (error != null) self.respond(404, "page not found");
+            else {
+                self.variables['readme'] = marked(content.toString());
+                self.respond(200);
+            }
+        });
+    };
+}
+
+module.exports = FileController;

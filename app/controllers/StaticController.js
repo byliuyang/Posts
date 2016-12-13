@@ -1,6 +1,11 @@
-var staticController = module.exports = Object.create(require('./ApplicationController.js'));
+ApplicationController = require('./ApplicationController.js');
+module.exports = StaticController;
 
-staticController.index = function () {
-    this.setView('movie/index');
-    this.respond(200);
-};
+function StaticController() {
+    ApplicationController.call(this);
+    this.index = function () {
+        this.setView('post/index');
+        this.respond(200);
+    };
+}
+

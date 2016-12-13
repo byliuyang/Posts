@@ -1,0 +1,61 @@
+extends ../app/layout
+block title
+    title Posts
+block styles
+    link(rel="stylesheet" href="https://cdn.rawgit.com/konpa/devicon/master/devicon.min.css")
+block scripts
+    script(src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAr8g3zg_Ai-9inA3znVT5dgndiMjquR6U" async defer)
+block content
+    div#content.readme
+        div#map
+        div.sidebar#posts-sidebar
+            div.location
+                span
+                    i(class="material-icons") place
+                span
+                    div Worcester, MA
+            ul.tab
+                li.active
+                    i(class="material-icons") access_time
+                    span New
+                li
+                    i(class="material-icons") trending_up
+                    span Hot
+            ul.posts#posts
+                each post in posts
+                    li
+                        div.info
+                            div.avatar(class=post.user.avatar.theme)
+                                i(class="devicon-" + post.user.avatar.icon + "-plain")
+                            div.id-time
+                                div.id=post.user.key
+                                div.time=post.time
+                        div.message=post.message
+            div.reply
+                div.content
+                    div.info
+                        div.content
+                            div.avatar(class=user.avatar.theme)
+                                i(class="devicon-" + user.avatar.icon + "-plain")
+                            div.id-location
+                                div.id= userId
+                                div.location at&nbsp;
+                                    span#location
+
+                    textarea#message-textarea(placeholder="Press enter to post message")
+                    ul.toolbar
+                        li
+                            i(class="material-icons") face
+                        li
+                            i(class="material-icons") panorama
+                        div.words
+                            span#word-count 0
+                            =' words'
+
+    div#pre-loading
+        div#loader
+        div#loading-logo P
+        div#loading-text
+        div.pane.left
+        div.pane.right
+

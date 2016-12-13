@@ -17,7 +17,7 @@ function readFile() {
 
 function writeFile(data) {
     return new Promise(function (success, fail) {
-        fs.writeFile(dbFile, data, function (err) {
+        fs.writeFile(dbFile, data, {flag: 'w'}, function (err) {
             if (err) fail(err);
             else success();
         });
@@ -32,8 +32,8 @@ function readJson() {
     return readFile().then(JSON.parse);
 }
 
-exports.getTable = function(tableName){
-    return new Promise(function(success, fail){
+exports.getTable = function (tableName) {
+    return new Promise(function (success, fail) {
         readJson().then(function (json) {
             if (json[tableName]) success(json[tableName]);
             fail();
@@ -41,7 +41,7 @@ exports.getTable = function(tableName){
     });
 };
 
-exports.saveTable = function(tableName, content){
+exports.saveTable = function (tableName, content) {
     return readJson().then(function (json) {
         json[tableName] = content;
         return writeJson(json);

@@ -1,429 +1,163 @@
 var header,
-    searchInput,
-    resultBox,
-    blackCover,
-    submitButton,
-    searchForm,
-    scrollButton,
-    doneButton,
-    shareResultButton,
-    shareResultDialog,
-    newMovieButton,
-    newMovieDialog,
-    shareResultDialogContent,
-    shareResultDialogInput,
-    shareResultDialogButton,
-    contentContainer,
-    posterFileInput,
-    posterImage,
-    submitNewMovieButton,
-    newMovieForm,
-    movieList;
-
+    mapEl,
+    content,
+    sidebar,
+    map,
+    preLoadingScreen,
+    wordCount,
+    messageTextarea,
+    geocoder,
+    locationEl,
+    pos,
+    connection,
+    postsEl,
+    readmeBtn;
 
 window.onload = function () {
+    initElements();
+    initEventHandler();
 
-    header = document.querySelector('header');
-    searchInput = document.querySelector('.search-field>input');
-    resultBox = document.querySelector('.search-result');
-    blackCover = document.querySelector('#black-cover');
-    submitButton = document.querySelector('#submit-button');
-    searchForm = document.querySelector('#search-form');
-    scrollButton = document.querySelector('#scroll-up-button');
-    shareResultButton = document.querySelector('#share-result-button');
-    doneButton = document.querySelector('#done-button');
-    shareResultDialog = document.querySelector('#share-result-dialog');
-    posterFileInput = document.querySelector('#' + CSS.escape('movie[poster]'));
-    posterImage = document.querySelector('.image-box>img');
-    newMovieButton = document.querySelector('.add-movie-button');
-    newMovieDialog = document.querySelector('#new-movie-dialog');
-    submitNewMovieButton = document.querySelector('#submit-new-movie-btn');
-    newMovieForm = document.querySelector('#new-movie-form');
-    movieList = document.querySelector('#movie-list');
-
-    pullMovieList();
-
-    if (submitNewMovieButton) {
-        submitNewMovieButton.addEventListener('click', function () {
-            var formData = '';
-
-            newMovieForm.querySelectorAll('input, textarea').forEach(function (field) {
-                formData += encodeURIComponent(field.name) + '=' + encodeURIComponent(field.value) + '&';
-            });
-
-            ajax('movies', 'POST', formData).then(function () {
-                hideBlackCover();
-                var data = {};
-                newMovieForm.querySelectorAll('input, textarea').forEach(function (field) {
-                    data[field.name] = field.value;
-                });
-                pullMovieList();
-                removeClass(newMovieDialog, 'active');
-            }, function (err) {
-            });
-        });
-    }
-
-    if (newMovieButton) {
-        newMovieButton.addEventListener('click', function (e) {
-            e.stopPropagation();
-            e.preventDefault();
-            showBlackCover();
-            addClass(newMovieDialog, 'active');
-        });
-    }
-
-    if (shareResultDialog) {
-        shareResultDialogInput = shareResultDialog.querySelector('input');
-        shareResultDialogButton = shareResultDialog.querySelector('button');
-        shareResultDialogContent = shareResultDialog.querySelector('.content');
-    }
-    contentContainer = document.querySelector('#content');
-
-    blackCover.addEventListener('click', function () {
-        removeClass(header, 'active');
-        removeClass(resultBox, 'active');
-        removeClass(doneButton, 'active');
-        resultBox.style.marginTop = -resultBox.clientHeight - header.clientHeight + "px";
-        hideBlackCover();
-        searchInput.blur();
-        removeClass(shareResultDialog, 'active');
-        if (newMovieDialog)
-            removeClass(newMovieDialog, 'active');
-        addClass(shareResultButton, 'active');
-    });
-
-    if (searchInput) {
-
-        searchInput.addEventListener('focus', function () {
-            addClass(header, 'active');
-            addClass(resultBox, 'active');
-            addClass(doneButton, 'active');
-            resultBox.style.marginTop = '0px';
-            showBlackCover();
-            this.setSelectionRange(0, this.value.length);
-            sendSearchRequestAutoComplete(searchInput.value);
-        });
-
-        searchInput.addEventListener('keydown', function (e) {
-            if (e.key == 'Escape') {
-                blackCover.click();
-                sendSearchRequest('');
-            } else if (e.key == 'Enter')
-                sendSearchRequest(e.target.value);
-        });
-
-        searchInput.addEventListener('input', function (e) {
-            if (e.target.value != '') {
-                document.title = e.target.value;
-                window.history.pushState(e.target.value, 'search', 'search?q=' + e.target.value);
-            } else {
-                document.title = 'Welcome to Movie Search!';
-                window.history.pushState('Welcome to Movie Search!', 'home', '/');
-            }
-            sendSearchRequestAutoComplete(e.target.value);
-        });
-    }
-
-    if (submitButton)
-        submitButton.addEventListener('click', function () {
-            sendSearchRequest(document.querySelector('.search-field input[name=q]').value);
-        });
-
-    window.onscroll = function () {
-        if (scrollButton) {
-            if (document.body.scrollTop > 0)
-                addClass(scrollButton, 'active');
-            else
-                removeClass(scrollButton, 'active');
-        }
-
-    };
-
-    if (shareResultButton)
-        addClass(shareResultButton, 'active');
-
-    if (shareResultDialogButton)
-        shareResultDialogButton.addEventListener('click', function () {
-            shareResultDialogInput.focus();
-            shareResultDialogInput.select();
-            document.execCommand('copy');
-            removeClass(shareResultDialog, 'active');
-            hideBlackCover();
-            addClass(shareResultButton, 'active');
-        });
-
-    if (doneButton)
-        doneButton.addEventListener('click', function () {
-            blackCover.click();
-        });
-
-    document.querySelectorAll('.text-input').forEach(addMaterialLabel);
-
-    if (posterFileInput)
-        posterFileInput.onchange = function () {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                addClass(posterImage.parentNode, 'active');
-                posterImage.src = e.target.result;
-            };
-
-            reader.readAsDataURL(this.files[0]);
-        };
-
-    var path = window.location.pathname;
-    if (path == '/search') {
-        var query = window.location.search.substring(1);
-        var params = {};
-
-        query.split('&').forEach(function (keyValue) {
-            var kv = keyValue.split('=');
-            params[kv[0]] = decodeURI(kv[1]);
-        });
-
-        if (params['q']) {
-            searchInput.value = params['q'];
-            submitButton.click();
-        }
-    }
+    document.body.style.opacity = 1;
+    adjustSize();
+    if (mapEl) initMap();
+    initStreaming();
 };
 
-function scrollToTop() {
-    transition({
-        target: document.body,
-        property: 'scrollTop',
-        from: document.body.scrollTop,
-        to: 0,
-        duration: 400
-    });
+function initElements() {
+    header = document.querySelector('header');
+    mapEl = document.querySelector('#map');
+    content = document.querySelector('#content');
+    sidebar = document.querySelector('#posts-sidebar');
+    preLoadingScreen = document.querySelector('#pre-loading');
+    wordCount = document.querySelector('#word-count');
+    messageTextarea = document.querySelector('#message-textarea');
+    locationEl = document.querySelector('#location');
+    postsEl = document.querySelector('#posts');
+    readmeBtn = document.querySelector('#readme-btn');
 }
 
-function showSharedResultDialog() {
-    shareResultDialogInput.value = window.location.href;
-    showBlackCover();
-    shareResultDialogInput.setSelectionRange(0, shareResultDialogInput.value.length);
-    addClass(shareResultDialog, 'active');
-    removeClass(shareResultButton, 'active');
-}
-
-function editListener(e) {
-    var label = e.target;
-    label.innerText = '';
-    var input = getEditable(label.dataset.inputType, label.dataset.value || '');
-    var wrapper = document.createElement('div');
-    wrapper.appendChild(input);
-    label.appendChild(wrapper);
-
-    label.removeEventListener('click', editListener);
-    addClass(label, 'editing');
-    input.focus();
-
-    input.addEventListener('blur', function (inputEvent) {
-        inputEvent.stopPropagation();
-        ajax('movies/' + encodeURI(label.dataset.key), 'PATCH', label.dataset.name + '=' + input.value)
-            .then(function () {
-                label.dataset.value = input.value;
-                label.innerText = label.dataset.value;
-                label.addEventListener('click', editListener);
-                removeClass(label, 'editing');
-            });
-    });
-
-    input.addEventListener('keydown', function (inputEvent) {
-        if (inputEvent.key == 'Escape' || inputEvent.key == 'Enter')
-            input.blur();
-    });
-}
-
-function pullMovieList() {
-    ajax('movies', 'GET')
-        .then(function (data) {
-            movieList.innerHTML = '';
-            var movies = JSON.parse(data);
-            Object.keys(movies).forEach(function (k) {
-                addMovie(movies[k]);
-            });
+function initEventHandler() {
+    if (messageTextarea) {
+        messageTextarea.addEventListener('input', function () {
+            wordCount.textContent = messageTextarea.value.split(/ +/).filter(function (word) {
+                return word
+            }).length;
         });
-}
 
-function deleteMovieListener(e) {
-    e.preventDefault();
-
-    ajax(e.target.parentNode.href, 'DELETE').then(function () {
-        console.log(e.target.parentNode.href);
-        var li = findParent(e.target, '.movie');
-        li.addEventListener('transitionend', function () {
-            if (li.parentNode) li.parentNode.removeChild(li);
+        messageTextarea.addEventListener('keydown', function (event) {
+            if (event.key == 'Enter') {
+                event.preventDefault();
+                createPost();
+            }
         });
-        li.style.left = -(contentContainer.offsetLeft + li.offsetWidth) + 'px';
-        li.style.opacity = 0;
-    });
-}
-
-function addMovie(movie) {
-    var li = document.createElement('li');
-    li.className = 'movie';
-    li.innerHTML =
-        '<img src=' + movie['poster'] + '>' +
-        '<section>' +
-        '<h1 data-method="patch" data-key="' + movie['key'] + '" data-name="movie[title]" data-value="' + movie['title'] + '" data-input-type="input">' + movie['title'] + '</h1>' +
-        '<table>' +
-        '<tbody>' +
-        '<tr class="rating">' +
-        '<td>Rating</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[rating]" data-value="' + movie['rating'] + '">' + movie['rating'] + '</td>' +
-        '</tr>' +
-        '<tr class="languagage">' +
-        '<td>Language</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[languages]" data-value="' + movie['languages'] + '">' + movie['languages'] + '</td>' +
-        '</tr>' +
-        '<tr class="released">' +
-        '<td>Release</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[released]" data-value="' + movie['released'] + '">' + movie['released'] + '</td>' +
-        '</tr>' +
-        '<tr class="runtime">' +
-        '<td>Runtime</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[runtime]" data-value="' + movie['runtime'] + '">' + movie['runtime'] + '</td>' +
-        '</tr>' +
-        '<tr class="genres">' +
-        '<td>Genres</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[genres]" data-value="' + movie['genres'] + '">' + movie['genres'] + '</td>' +
-        '</tr>' +
-        '<tr class="director">' +
-        '<td>Director</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[director]" data-value="' + movie['director'] + '">' + movie['director'] + '</td>' +
-        '</tr>' +
-        '<tr class="writer">' +
-        '<td>Writer</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[writer]" data-value="' + movie['writer'] + '">' + movie['writer'] + '</td>' +
-        '</tr>' +
-        '<tr class="actors">' +
-        '<td>Actor</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="input" data-name="movie[actor]" data-value="' + movie['actor'] + '">' + movie['actor'] + '</td>' +
-        '</tr>' +
-        '<tr class="plot">' +
-        '<td>Plot</td>' +
-        '<td data-method="patch" data-key="' + movie['key'] + '" data-input-type="textarea" data-name="movie[plot]" data-value="' + movie['plot'] + '">' + movie['plot'] + '</td>' +
-        '</tr>' +
-        '</tbody>' +
-        '</table>' +
-        '</section>' +
-        '<ul class="actions">' +
-        '<li>' +
-        '<a href="/movies/' + movie['key'] + '" data-method="delete" title="Delete ' + movie['title'] + '">' +
-        '<i class="material-icons">remove_circle</i>' +
-        '</a>' +
-        '</li>' +
-        '</ul>';
-    movieList.insertBefore(li, movieList.firstChild);
-
-    li.querySelectorAll('[data-method=patch]').forEach(function (label) {
-        label.addEventListener('click', editListener);
-    });
-
-    li.querySelectorAll('a[data-method=delete]').forEach(function (link) {
-        link.addEventListener('click', deleteMovieListener);
-    });
-}
-
-function getEditable(inputType, value) {
-    var input = document.createElement(inputType);
-    input.value = value;
-    return input;
-}
-
-function addMaterialLabel(input) {
-    input.addEventListener('focus', function () {
-        addClass(input, 'active');
-    });
-
-    input.addEventListener('blur', function () {
-        if (input.value.length <= 0) removeClass(input, 'active');
-    });
-}
-
-function findParent(dom, selector) {
-    var parent = dom;
-    var last = null;
-    while (!parent.querySelector(selector)) {
-        last = parent;
-        parent = parent.parentNode;
     }
-    return last;
+
+    readmeBtn.addEventListener('click', function (event) {
+        window.location.href = '/README.md';
+    });
 }
 
-function showBlackCover() {
-    blackCover.style.display = 'block';
-    blackCover.style.height = Math.max(document.documentElement.offsetHeight, window.innerHeight) + 'px';
-}
+function initStreaming() {
+    connection = new WebSocket('ws://localhost:8081/message');
+    connection.onopen = function () {
+        connection.send('Ping');
+    };
 
-function hideBlackCover() {
-    blackCover.style.height = '0px';
-    blackCover.style.display = 'none';
-}
+    connection.onerror = function (error) {
+        console.log(error);
+    };
 
-function updateAutoComplete(query, results) {
-    var resultBox = document.querySelector('.search-result');
-    resultBox.innerHTML = '';
-    if (results.length > 0) {
-        results.forEach(function (r) {
-            var li = document.createElement('li');
-            li.innerHTML = r.replace(new RegExp('(' + query + ')', 'ig'), '<span>$1</span>');
-            resultBox.appendChild(li);
-            li.dataset['name'] = r;
-            li.addEventListener('click', function (e) {
-                searchInput.value = e.target.dataset['name'];
-                getMovie(e.target.dataset['name']);
-                blackCover.click();
-            });
-        });
+    connection.onmessage = function (e) {
+        displayNewPost(JSON.parse(e.data));
     }
 }
 
-function updateContents(r) {
-    var resultBox = document.querySelector('#content>ul');
-    resultBox.innerHTML = '';
-    Object.keys(r).forEach(function (movieName) {
-        addMovie(r[movieName]);
+function displayNewPost(post) {
+    let postEl = document.createElement('li');
+    postEl.innerHTML =
+        '<div class="info">' +
+        '<div class="avatar ' + post.user.avatar.theme + '">' +
+        '<i class="devicon-' + post.user.avatar.icon + '-plain"></i>' +
+        '</div>' +
+        '<div class="id-time">' +
+        '<div class="id">' + post.user.key + '</div>' +
+        '<div class="time">' + post.time + '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="message">' + post.message + '</div>';
+
+    postsEl.insertBefore(postEl, postsEl.firstChild);
+    addClass(postEl, 'shining');
+
+}
+
+function createPost() {
+    let formData = {};
+    formData['post[latitude]'] = pos.lat;
+    formData['post[longitude]'] = pos.lng;
+    formData['post[message]'] = messageTextarea.value;
+    let body = Object.keys(formData).map(function (key) {
+        return key + '=' + formData[key];
+    }).join('&');
+    ajax('post', 'POST', body, 'application/json')
+        .then(function () {
+            messageTextarea.value = '';
+        });
+}
+
+window.onresize = function () {
+    adjustSize();
+};
+
+function adjustSize() {
+    if(mapEl) {
+        mapEl.style.height = (document.documentElement.clientHeight - header.clientHeight) + "px";
+        mapEl.style.width = (content.clientWidth - sidebar.clientWidth) + "px";
+    }
+    if(sidebar)
+        sidebar.style.height = mapEl.style.height;
+    if(preLoadingScreen) preLoadingScreen.style.height = document.documentElement.clientHeight + "px";
+}
+
+function initMap() {
+    var styledMapType = getMapStyle();
+
+    map = new google.maps.Map(mapEl, {
+        scrollwheel: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        zoom: 6,
+        mapTypeControlOptions: {
+            mapTypeIds: ['styled_map']
+        }
     });
+
+    map.mapTypes.set('styled_map', styledMapType);
+    map.setMapTypeId('styled_map');
+
+    // Reverse geo encoding
+    geocoder = new google.maps.Geocoder;
+
+    // Get location
+    if ("geolocation" in navigator)
+        navigator.geolocation.watchPosition(updateLocation);
 }
 
-function updateContent(r) {
-    var resultBox = document.querySelector('#content>ul');
-    resultBox.innerHTML = '';
-    var li = document.createElement('li');
-    li.className = 'movie';
-    li.innerHTML = getResultContent(r);
-    resultBox.appendChild(li);
-}
+function updateLocation(position) {
+    pos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+    };
+    map.setCenter(pos);
+    geocoder.geocode({'location': pos}, function (results, status) {
+        if (status === 'OK') {
+            let number = results[0]['address_components'][0]['short_name'];
+            let street = results[0]['address_components'][1]['short_name'];
+            locationEl.textContent = number + ', ' + street;
+        }
 
-function sendSearchRequestAutoComplete(query) {
-    ajax('/search?q=' + encodeURI(query), 'GET', null, 'application/json/keys')
-        .then(function (data) {
-            var results = JSON.parse(data);
-            updateAutoComplete(query, results);
-        });
-}
-
-function sendSearchRequest(query) {
-    ajax('/search?q=' + encodeURI(query), 'GET', null, 'application/json')
-        .then(function (data) {
-            if (data != "") {
-                var result = JSON.parse(data);
-                updateContents(result);
-                blackCover.click();
-            }
-        });
-}
-
-function getMovie(query) {
-    ajax('/movies/' + encodeURI(query), 'GET', null, 'application/json')
-        .then(function (data) {
-            if (data != "") {
-                var result = JSON.parse(data);
-                updateContent(result);
-            }
-        });
+    });
+    addClass(preLoadingScreen, 'loaded');
 }
 
 /**
@@ -486,4 +220,161 @@ function transition(obj) {
         if (step > 0 && curr >= endVal) window.clearInterval(timer);
         else if (step < 0 && curr <= endVal) window.clearInterval(timer);
     }, 10);
+}
+
+function getMapStyle() {
+    return new google.maps.StyledMapType(
+        [
+            {
+                "featureType": "administrative",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    {
+                        "color": "#6395A0"
+                    }
+                ]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "color": "#f2f2f2"
+                    }
+                ]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "color": "#F5F5F2"
+                    }
+                ]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "poi.park",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "color": "#BBE4CF"
+                    },
+                    {
+                        "visibility": "on"
+                    }
+                ]
+            },
+            {
+                "featureType": "road",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "saturation": -100
+                    },
+                    {
+                        "lightness": 45
+                    },
+                    {
+                        "visibility": "simplified"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "simplified"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "color": "#F9C9AB"
+                    },
+                    {
+                        "visibility": "simplified"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "labels.text",
+                "stylers": [
+                    {
+                        "color": "#4e4e4e"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "color": "#f4f4f4"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    {
+                        "color": "#787878"
+                    }
+                ]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "labels.icon",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "transit",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "visibility": "off"
+                    }
+                ]
+            },
+            {
+                "featureType": "water",
+                "elementType": "all",
+                "stylers": [
+                    {
+                        "color": "#eaf6f8"
+                    },
+                    {
+                        "visibility": "on"
+                    }
+                ]
+            },
+            {
+                "featureType": "water",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    {
+                        "color": "#C8ECED"
+                    }
+                ]
+            }
+        ]
+    );
 }

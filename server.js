@@ -1,9 +1,10 @@
 var http = require('http'),
     fs = require('fs'),
     url = require('url'),
-    port = 8081,
+    port = 8080,
     marked = require('marked'),
-    router = require('./libs/router');
+    router = require('./libs/router'),
+    messsageSocket = require('./app/websockets/messageSocket');
 
 // Set syntax highlight for markdown code snippets
 marked.setOptions({
@@ -12,9 +13,11 @@ marked.setOptions({
     }
 });
 
-var server = http.createServer(function (req, res) {
+const server = http.createServer(function (req, res) {
     router.resolve(req, res);
 });
 
 server.listen(process.env.PORT || port);
 console.log('listening on ' + (process.env.PORT || port));
+
+

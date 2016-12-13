@@ -2,22 +2,23 @@ doctype html
 html(lang="en")
     head
         meta(name="viewport", content="width=device-width, initial-scale=1")
+        meta(charset="utf-8")
         block title
-            title=''
+        link(rel="icon" type="image/x-icon" href="/images/favicon.ico")
         link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+        link(href="https://fonts.googleapis.com/css?family=Architects+Daughter|Raleway:500|Julius+Sans+One:500|Source+Sans+Pro" rel="stylesheet")
+        link(rel='stylesheet', href='/styles/gmail-scrollbars.css')
         link(rel='stylesheet', href='/styles/style.css')
         block styles
         script(src='/scripts/script.js')
         block scripts
     body
         header
-            div.center
-                div.logo
-                    a(href="/", title="Go to movie search homepage") Movie Search
-                block header
-            i(class="material-icons") menu
+            nav
+                div#logo
+                    a(href="/", title="Go to homepage") Posts
+                    div beta
+                div.buttons
+                    div.button.green#readme-btn README
+
         block content
-        div#black-cover
-        block dialogs
-        block buttons
-        block flash-message
