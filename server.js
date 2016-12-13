@@ -17,6 +17,8 @@ const server = http.createServer(function (req, res) {
     router.resolve(req, res);
 });
 
+messsageSocket.init(server);
+
 server.listen(process.env.PORT || port);
 console.log('listening on ' + (process.env.PORT || port));
 

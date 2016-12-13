@@ -1,7 +1,12 @@
-const WebSocketServer = require('ws').Server,
-    wss = module.exports = new WebSocketServer({port: 8081});
+const WebSocketServer = require('ws').Server;
+wsServer = module.exports =  {};
 
-wss.on('connection', function msg_connection(ws) {
-    ws.on('message', function msg_incoming(message) {
+wsServer.init = (server) => {
+    wsServer.ws = new WebSocketServer({server: server});
+
+    wsServer.ws.on('connection', function msg_connection(ws) {
+        ws.on('message', function msg_incoming(message) {
+
+        });
     });
-});
+};

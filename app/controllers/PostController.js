@@ -46,7 +46,7 @@ function PostController() {
                     p.timestamp = p.time;
                     p.time = moment(p.time).fromNow();
                     p.user = user;
-                    messageSocket.clients.forEach((client) => {
+                    messageSocket.ws.clients.forEach((client) => {
                         client.send(JSON.stringify(p));
                     });
                     this.end(200, 'application/json');
