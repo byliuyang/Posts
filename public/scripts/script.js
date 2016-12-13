@@ -58,7 +58,7 @@ function initEventHandler() {
 }
 
 function initStreaming() {
-    connection = new WebSocket('ws://localhost:8081/message');
+    connection = new WebSocket('ws://cs4241-a7-byliuyang.herokuapp.com:8081/message');
     connection.onopen = function () {
         connection.send('Ping');
     };
