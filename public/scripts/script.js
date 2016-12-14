@@ -88,8 +88,9 @@ function displayNewPost(post) {
         '<div class="time">' + post.time + '</div>' +
         '</div>' +
         '</div>' +
-        '<div class="message">' + post.message + '</div>';
+        '<div class="message"></div>';
 
+    postEl.querySelector('.message').textContent = post.message;
     postsEl.insertBefore(postEl, postsEl.firstChild);
     addClass(postEl, 'shining');
 
