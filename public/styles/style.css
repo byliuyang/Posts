@@ -2,8 +2,7 @@ body {
   padding: 0;
   margin: 0;
   font-family: "Raleway", sans-serif;
-  opacity: 0;
-  overflow: hidden; }
+  opacity: 0; }
 
 nav {
   background-color: white;
